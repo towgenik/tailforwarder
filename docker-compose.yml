@@ -2,7 +2,7 @@ version: '3.8'
 
 services:
   tailforwarder-one:
-    image: menggatot/tailforwarder:latest
+    image: ghcr.io/towgenik/tailforwarder:latest
     container_name: tailforwarder-one
     hostname: tailforwarder-one # Unique hostname for Tailscale
     restart: unless-stopped
@@ -44,7 +44,7 @@ services:
         ipv4_address: 10.10.0.10 # Static IP for this instance
 
   tailforwarder-two:
-    image: menggatot/tailforwarder:latest
+    image: ghcr.io/towgenik/tailforwarder:latest
     container_name: tailforwarder-two
     hostname: tailforwarder-two # Unique hostname for Tailscale
     restart: unless-stopped
@@ -86,7 +86,7 @@ services:
         ipv4_address: 10.10.0.20 # Static IP for this instance
 
   tailforwarder-three:
-    image: menggatot/tailforwarder:latest
+    image: ghcr.io/towgenik/tailforwarder:latest
     container_name: tailforwarder-three
     hostname: tailforwarder-three # Unique hostname for Tailscale
     restart: unless-stopped
@@ -128,7 +128,7 @@ services:
         ipv4_address: 10.10.0.30 # Static IP for this instance
 
   # tailforwarder-exit:
-  #   image: menggatot/tailforwarder:latest
+  #   image: ghcr.io/towgenik/tailforwarder:latest
   #   container_name: tailforwarder-exit
   #   hostname: tailforwarder-exit # Unique hostname for Tailscale
   #   restart: unless-stopped

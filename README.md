@@ -2,7 +2,7 @@
 
 This project provides a Dockerized solution for forwarding network traffic between your local LAN and your Tailscale network, or vice-versa. It uses a macvlan network for each container instance to have its own IP on your LAN and utilizes `iptables` for fine-grained traffic manipulation. This setup allows running multiple forwarder instances, each configured for a distinct scenario.
 
-**Docker Hub:** [menggatot/tailforwarder](https://hub.docker.com/r/menggatot/tailforwarder)
+**Container image:** [`ghcr.io/towgenik/tailforwarder`](https://github.com/towgenik/tailforwarder/pkgs/container/tailforwarder) (GitHub Container Registry, for `linux/amd64`, `linux/arm64/v8` and `linux/arm/v7`)
 
 ## Features
 
@@ -49,7 +49,7 @@ The `tailscale_state_*` directories contain each node's private keys. They are c
 
 ## Installation and Setup
 
-This guide assumes you will use the prebuilt image from Docker Hub.
+This guide assumes you will use the prebuilt image from GitHub Container Registry (`ghcr.io/towgenik/tailforwarder:latest`). To build it yourself instead, run `docker build -t tailforwarder .` and change `image:` in `docker-compose.yml` to `tailforwarder`.
 
 1.  **Clone or Download:**
     If this project is in a Git repository:
@@ -255,6 +255,7 @@ docker exec tailforwarder-one iptables -S TAILFWD-FORWARD
 
 Existing state directories keep working; no re-login is needed. Note these behavior changes:
 
+*   The image is now published to GitHub Container Registry. Change `image:` in your `docker-compose.yml` to `ghcr.io/towgenik/tailforwarder:latest`.
 *   `TS_AUTHKEY` is no longer required once a node is registered, and an expired auth key no longer prevents the container from starting.
 *   `tailscale up` now runs with `--reset`. Settings that were changed by hand inside the container (e.g. with `tailscale set`) are reset to the values from the environment variables on every start.
 *   An auth key passed via `TS_EXTRA_ARGS` (`--authkey=...` / `--auth-key=...`) is rejected. Move it to `TS_AUTHKEY`.
