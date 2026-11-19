@@ -15,9 +15,9 @@ services:
       - net.ipv6.conf.all.forwarding=1 # Enable if using IPv6
     environment:
       # --- Core Tailscale Settings ---
-      - TS_AUTHKEY=${TS_AUTHKEY} # Must be set in the environment or a .env file read by docker-compose
+      - TS_AUTHKEY=${TS_AUTHKEY:-} # From .env. Only used for the first login / re-login; see .env.example
       - TS_HOSTNAME=tailforwarder-one # Matches hostname above
-      - TS_USERSPACE=false
+      - TS_USERSPACE=false # Must stay false: iptables forwarding needs kernel mode
       - TS_STATE_DIR=/var/lib/tailscale
       # - TS_ROUTES= # Not advertising routes for this scenario
       # - TS_TAGS=tag:tailforwarder
@@ -57,9 +57,9 @@ services:
       - net.ipv6.conf.all.forwarding=1
     environment:
       # --- Core Tailscale Settings ---
-      - TS_AUTHKEY=${TS_AUTHKEY} # Must be set in the environment or a .env file read by docker-compose
+      - TS_AUTHKEY=${TS_AUTHKEY:-} # From .env. Only used for the first login / re-login; see .env.example
       - TS_HOSTNAME=tailforwarder-two # Matches hostname above
-      - TS_USERSPACE=false
+      - TS_USERSPACE=false # Must stay false: iptables forwarding needs kernel mode
       - TS_STATE_DIR=/var/lib/tailscale
       # - TS_ROUTES= # Not advertising routes for this scenario
       # - TS_TAGS=tag:tailforwarder
@@ -99,9 +99,9 @@ services:
       - net.ipv6.conf.all.forwarding=1
     environment:
       # --- Core Tailscale Settings ---
-      - TS_AUTHKEY=${TS_AUTHKEY} # Must be set in the environment or a .env file read by docker-compose
+      - TS_AUTHKEY=${TS_AUTHKEY:-} # From .env. Only used for the first login / re-login; see .env.example
       - TS_HOSTNAME=tailforwarder-three # Matches hostname above
-      - TS_USERSPACE=false
+      - TS_USERSPACE=false # Must stay false: iptables forwarding needs kernel mode
       - TS_STATE_DIR=/var/lib/tailscale
       # - TS_ROUTES= # Not advertising routes for this scenario by default
       # - TS_TAGS=tag:ts-to-local
@@ -141,11 +141,11 @@ services:
   #     - net.ipv6.conf.all.forwarding=1
   #   environment:
   #     # --- Core Tailscale Settings ---
-  #     - TS_AUTHKEY=${TS_AUTHKEY} # Must be set in the environment or a .env file read by docker-compose
+  #     - TS_AUTHKEY=${TS_AUTHKEY:-} # From .env. Only used for the first login / re-login; see .env.example
   #     - TS_HOSTNAME=tailforwarder-exit # Matches hostname above
-  #     - TS_USERSPACE=false
+  #     - TS_USERSPACE=false # Must stay false: iptables forwarding needs kernel mode
   #     - TS_STATE_DIR=/var/lib/tailscale
-  #     - TS_EXTRA_ARGS=--advertise-exit-node # Required to advertise as exit node
+  #     - TS_EXTRA_ARGS= # --advertise-exit-node is added automatically when ENABLE_EXIT_NODE=true
   #     # - TS_TAGS=tag:exit-node
   #     - TS_ACCEPT_ROUTES=false # Not needed for exit node
   #

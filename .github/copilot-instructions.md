@@ -90,7 +90,7 @@ docker run -d \
 This project does not currently have automated tests. Testing is performed through:
 1. Container startup and log verification
 2. Manual network connectivity testing
-3. Verification of iptables rules with `iptables -L -n -v`
+3. Verification of iptables rules in the `TAILFWD-*` chains (`iptables -t nat -S TAILFWD-PREROUTING`; use `iptables-nft` on nftables-only hosts)
 4. Tailscale connection status with `tailscale status`
 
 ## Coding Standards & Conventions
@@ -148,13 +148,15 @@ This project does not currently have automated tests. Testing is performed throu
 
 ## Environment Variables Reference
 
-### Required Variables
-- `TS_AUTHKEY`: Tailscale authentication key (required, set in .env file)
+### Authentication
+- `TS_AUTHKEY`: Tailscale auth key or OAuth client secret (set in .env file). Only used when the node must log in (first start, or node key expired / device removed); restarts reuse the identity in `TS_STATE_DIR`. OAuth secrets (`tskey-client-...`) get `?ephemeral=false` appended and require `TS_TAGS`.
+- `TS_AUTHKEY_FILE`: Path to a file containing the key (takes precedence over `TS_AUTHKEY`)
+- `TS_UP_TIMEOUT`: Timeout for `tailscale up` (default: `60s`)
 
 ### Per-Instance Core Configuration
 - `TS_HOSTNAME`: Tailscale hostname for the instance
 - `TS_STATE_DIR`: State directory (default: `/var/lib/tailscale`)
-- `TS_USERSPACE`: Use userspace mode (default: `false`)
+- `TS_USERSPACE`: Must be `false`; kernel mode is required for iptables forwarding
 - `TS_PEER_UDP_PORT`: Unique UDP port per instance
 - `TS_ACCEPT_ROUTES`: Accept advertised routes (default: `false`)
 - `TS_ACCEPT_DNS`: Accept Tailscale DNS (default: `false`)
@@ -213,7 +215,7 @@ The CI builds for multiple architectures: linux/amd64, linux/arm64/v8, linux/arm
 
 ### Container Startup Issues
 1. Check logs: `docker-compose logs -f <service-name>`
-2. Verify `TS_AUTHKEY` is set correctly in `.env`
+2. If the node needs to log in, verify `TS_AUTHKEY` is valid (not expired/used) and that `TS_TAGS` is set for OAuth secrets
 3. Ensure host has `/dev/net/tun` device
 4. Check for conflicting IP addresses on LAN
 
