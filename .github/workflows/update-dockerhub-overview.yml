@@ -2,6 +2,7 @@ name: Update Docker Hub Overview
 
 on:
   push:
+    branches: [ "main" ]
     paths:
       - 'DOCKERHUB_OVERVIEW.md'
 
