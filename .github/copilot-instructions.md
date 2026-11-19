@@ -17,15 +17,13 @@ This repository provides a Dockerized solution for forwarding network traffic be
 ├── .github/
 │   ├── dependabot.yml              # Dependency update automation
 │   └── workflows/
-│       ├── docker-publish.yml      # Docker image build and publish workflow
-│       └── update-dockerhub-overview.yml  # Docker Hub description sync
+│       └── docker-publish.yml      # Docker image build and publish workflow (GHCR)
 ├── Dockerfile                       # Docker image definition
 ├── entrypoint.sh                   # Container startup script
 ├── iptables-config.sh              # iptables configuration script
 ├── docker-compose.yml              # Multi-instance deployment configuration
 ├── .env.example                    # Environment variable template
-├── README.md                       # User documentation
-├── DOCKERHUB_OVERVIEW.md          # Docker Hub repository description
+├── README.md                       # User documentation (also shown on the GHCR package page)
 ├── LICENSE                         # Apache 2.0 License
 └── NOTICE                          # Legal notices
 ```
@@ -46,12 +44,12 @@ The image is automatically built and published via GitHub Actions when changes a
 
 **Manual build:**
 ```bash
-docker build -t menggatot/tailforwarder:latest .
+docker build -t ghcr.io/towgenik/tailforwarder:latest .
 ```
 
 **Multi-arch build:**
 ```bash
-docker buildx build --platform linux/amd64,linux/arm64/v8,linux/arm/v7 -t menggatot/tailforwarder:latest .
+docker buildx build --platform linux/amd64,linux/arm64/v8,linux/arm/v7 -t ghcr.io/towgenik/tailforwarder:latest .
 ```
 
 ### Running the Container
@@ -82,7 +80,7 @@ docker run -d \
   -e TS_AUTHKEY=your-key \
   -e TS_HOSTNAME=tailforwarder \
   -v ./tailscale_state:/var/lib/tailscale \
-  menggatot/tailforwarder:latest
+  ghcr.io/towgenik/tailforwarder:latest
 ```
 
 ### Testing
@@ -90,7 +88,7 @@ docker run -d \
 This project does not currently have automated tests. Testing is performed through:
 1. Container startup and log verification
 2. Manual network connectivity testing
-3. Verification of iptables rules with `iptables -L -n -v`
+3. Verification of iptables rules in the `TAILFWD-*` chains (`iptables -t nat -S TAILFWD-PREROUTING`; use `iptables-nft` on nftables-only hosts)
 4. Tailscale connection status with `tailscale status`
 
 ## Coding Standards & Conventions
@@ -142,19 +140,20 @@ This project does not currently have automated tests. Testing is performed throu
 ### Documentation
 
 - **README.md:** User-facing documentation with setup instructions
-- **DOCKERHUB_OVERVIEW.md:** Docker Hub specific documentation (synced automatically)
 - **Code Comments:** Explain WHY, not WHAT (code should be self-explanatory)
 - **Environment Variables:** Document all variables with purpose and example values
 
 ## Environment Variables Reference
 
-### Required Variables
-- `TS_AUTHKEY`: Tailscale authentication key (required, set in .env file)
+### Authentication
+- `TS_AUTHKEY`: Tailscale auth key or OAuth client secret (set in .env file). Only used when the node must log in (first start, or node key expired / device removed); restarts reuse the identity in `TS_STATE_DIR`. OAuth secrets (`tskey-client-...`) get `?ephemeral=false` appended and require `TS_TAGS`.
+- `TS_AUTHKEY_FILE`: Path to a file containing the key (takes precedence over `TS_AUTHKEY`)
+- `TS_UP_TIMEOUT`: Timeout for `tailscale up` (default: `60s`)
 
 ### Per-Instance Core Configuration
 - `TS_HOSTNAME`: Tailscale hostname for the instance
 - `TS_STATE_DIR`: State directory (default: `/var/lib/tailscale`)
-- `TS_USERSPACE`: Use userspace mode (default: `false`)
+- `TS_USERSPACE`: Must be `false`; kernel mode is required for iptables forwarding
 - `TS_PEER_UDP_PORT`: Unique UDP port per instance
 - `TS_ACCEPT_ROUTES`: Accept advertised routes (default: `false`)
 - `TS_ACCEPT_DNS`: Accept Tailscale DNS (default: `false`)
@@ -203,7 +202,7 @@ This project does not currently have automated tests. Testing is performed throu
 
 ### Publishing Docker Images
 
-Images are automatically built and published to Docker Hub when:
+Images are automatically built and published to GitHub Container Registry (`ghcr.io/<owner>/tailforwarder`, tagged `latest` and the commit SHA) when:
 - Changes are pushed to the `main` branch
 - Workflow is manually triggered via `workflow_dispatch`
 
@@ -213,7 +212,7 @@ The CI builds for multiple architectures: linux/amd64, linux/arm64/v8, linux/arm
 
 ### Container Startup Issues
 1. Check logs: `docker-compose logs -f <service-name>`
-2. Verify `TS_AUTHKEY` is set correctly in `.env`
+2. If the node needs to log in, verify `TS_AUTHKEY` is valid (not expired/used) and that `TS_TAGS` is set for OAuth secrets
 3. Ensure host has `/dev/net/tun` device
 4. Check for conflicting IP addresses on LAN
 
@@ -234,7 +233,7 @@ The CI builds for multiple architectures: linux/amd64, linux/arm64/v8, linux/arm
 1. **Minimal Changes:** Make the smallest possible changes to achieve the goal
 2. **Preserve Working Code:** Don't modify working functionality unless necessary
 3. **Test Locally:** Validate changes in a local Docker environment before committing
-4. **Documentation:** Update README.md or DOCKERHUB_OVERVIEW.md if behavior changes
+4. **Documentation:** Update README.md if behavior changes
 5. **Consistency:** Match existing code style and conventions
 6. **Error Handling:** Ensure proper error handling in shell scripts
 7. **Security:** Never commit secrets or credentials; use environment variables

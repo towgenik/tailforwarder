@@ -1,0 +1,5 @@
+# Keep secrets and node state out of the Docker build context.
+.env
+tailscale_state*/
+.git
+.github
